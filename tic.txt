@@ -1,0 +1,166 @@
+
+pragma solidity >=0.4.22 <0.6.0;
+
+contract tic {
+    uint8 games=0;
+    uint8 cm=0;
+    address p1;
+    address p2;
+    
+    uint _p1=0;
+    uint _p2=0;
+    enum Board { Empty, X, O};
+    Board[3][3] board;
+    
+    
+    function startGame() public returns(uint8 ) {
+        if(turn() ==p1) {
+            p1= msg.sender;
+        }
+        if(turn() == p2)
+        {
+            p2=msg.sender;
+        }
+        //p1=player1;
+        //return p1;
+        games+=1;
+        return games;
+    }
+    function turn() public view returns(address) {
+        if(games == 0 || games == 1)
+        {
+            return p1;
+        }
+        else if(games == 2 || games ==3)
+        {
+            return p2;
+        }
+    }
+    function joinGame(address player2) public {
+        if(turn() == p1)
+        {
+            p2 = player2;
+        }
+        if(turn() == p2)
+        {
+            p1 = player2;
+        }
+    }
+    
+    //Printing the board
+    
+    function printBoard() public view returns(string ) {
+        
+        return string(abi.encodePacked("\n",printrow(0),"\n",printrow(1),"\n",printrow(2)));
+    }
+    
+    
+    function printrow(uint8 y) public view returns(string)  {
+        
+        return string(abi.encodePacked(tostring(0,y),"|",tostring(1,y),"|",tostring(2,y)));
+    }
+    
+    function tostring(uint8 x, uint8 y) public returns(string)
+    {
+        require(Bounds(x,y));
+        if(board[x][y]==Board.X)
+        {
+            return "X";
+        }
+        if(board[x][y]==Board.O)
+        {
+            return "O";
+        }
+        if(board[x][y]==Board.Empty)
+        {
+            return " ";
+        }
+    }
+    
+    function Move(uint8 x, uint8 y) public returns(bool ok,uint8 )
+    {
+        cm+=1;
+        //require(cm<=9);
+        require(Bounds(x,y));
+        require(!over());
+        if(board[x][y] != Board.Empty) {
+            return (false,cm);
+        }
+        else {
+            board[x][y] = player();
+            return (true,cm);
+        }
+        
+        
+    }
+    function Bounds(uint8 x, uint8 y) public returns(bool)
+    {
+        if(x>=0 && x<3 && y>=0 && y<3)
+        return true;
+        else
+        return false;
+    }
+    
+    function player() public returns(Board)
+    {
+        if(getCurrAdd()==p1)
+        {
+            return Board.X;
+        }
+        if(getCurrAdd()==p2)
+        {
+            return Board.O;
+        }
+    }
+    function getCurrAdd() public view returns(address) {
+        if(turn()==p1)
+        {
+            if(cm%2 ==1)
+            return p1;
+            else
+            return p2;
+        }
+        if(turn()==p2)
+        {
+            if(cm%2==1)
+            return p2;
+            else
+            return p1;
+        }
+    }
+    
+    function over() public view returns(bool) {
+        if(cm > 9 && Winner() != Board.Empty )
+        return true;
+        return false;
+        
+    }
+    function Winner() public view returns(Board) {
+        
+        for (uint8 i = 0; i < 3; i++) {
+            if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != Board.Empty) {
+                return board[i][0];
+            }
+        }
+        
+        for (uint8 j = 0; j < 3; j++) {
+            if (board[0][j] == board[1][j] && board[1][j] == board[2][j] && board[0][j] != Board.Empty) {
+                return board[0][j];
+            }
+        }
+        
+        if(board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != Board.Empty)
+        {
+            return board[0][0];
+        }
+        
+        if(board[0][2] == board[1][1] && board[1][1] == board[2][0] && board[0][2] != Board.Empty)
+        {
+            return board[0][2];
+        }
+        
+        return Board.Empty;
+    }
+   //games +=  1;
+}
+
